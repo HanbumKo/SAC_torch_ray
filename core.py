@@ -1,10 +1,11 @@
-import numpy as np
 import scipy.signal
-
 import torch
+import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
+
 from torch.distributions.normal import Normal
+from config import *
 
 
 def combined_shape(length, shape=None):
@@ -23,7 +24,7 @@ def count_vars(module):
     return sum([np.prod(p.shape) for p in module.parameters()])
 
 # Set up function for computing SAC Q-losses
-def compute_loss_q(data, ac, ac_targ, gamma=0.99, alpha=0.2):
+def compute_loss_q(data, ac, ac_targ):
     o, a, r, o2, d = data['obs'], data['act'], data['rew'], data['obs2'], data['done']
 
     q1 = ac.q1(o,a)
@@ -52,7 +53,7 @@ def compute_loss_q(data, ac, ac_targ, gamma=0.99, alpha=0.2):
     return loss_q, q_info
 
 # Set up function for computing SAC pi loss
-def compute_loss_pi(data, ac, alpha=0.2):
+def compute_loss_pi(data, ac):
     o = data['obs']
     pi, logp_pi = ac.pi(o)
     q1_pi = ac.q1(o, pi)
@@ -66,10 +67,6 @@ def compute_loss_pi(data, ac, alpha=0.2):
     pi_info = dict(LogPi=logp_pi.detach().numpy())
 
     return loss_pi, pi_info
-
-
-LOG_STD_MAX = 2
-LOG_STD_MIN = -20
 
 
 class SquashedGaussianMLPActor(nn.Module):

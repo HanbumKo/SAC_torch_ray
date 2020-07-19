@@ -5,31 +5,6 @@ import numpy as np
 from core import *
 from copy import deepcopy
 
-
-# class RolloutWorker(object):
-#     """
-#     Worker without Ray (for update purposes)
-#     """
-#     def __init__(self, lr=1e-3, gamma=0.99, alpha_q=0.1, alpha_pi=0.1, polyak=0.995,
-#                  epsilon=1e-2, seed=1):
-#         self.lr = lr
-#         self.gamma = gamma
-#         self.alpha_q = alpha_q
-#         self.alpha_pi = alpha_pi
-#         self.polyak = polyak
-#         self.epsilon = epsilon
-#         self.seed = seed
-    
-#     def get_action(self, o, deterministic=False):
-#         pass
-
-#     def get_weights(self):
-#         """
-#         Get weights
-#         """
-#         pass
-
-
 @ray.remote
 class RayRolloutWorker(object):
     """

@@ -1,44 +1,20 @@
 import itertools
-import numpy as np
 import torch
 import gym
 import time
+import numpy as np
 
+from config import *
 from core import *
-from copy import deepcopy
-from torch.optim import Adam
 from worker import *
 from replaybuffer import *
+from copy import deepcopy
+from torch.optim import Adam
 
-env = "Pendulum-v0"
-hid = 256
-l = 2
-gamma = 0.99
-seed = 0
 
 env_fn = lambda: gym.make(env)
 actor_critic = MLPActorCritic
 ac_kwargs = dict(hidden_sizes=[hid]*l)
-seed = 0
-steps_per_epoch = 4000
-epochs = 100
-replay_size = int(1e6)
-gamma=0.99
-polyak = 0.995
-lr = 1e-3
-alpha = 0.2
-batch_size = 100
-start_steps = 10000
-update_after = 30
-update_every = 10
-num_test_episodes = 10
-max_ep_len = 1000
-save_freq = 1
-eps = 0.0
-
-# Parameters for Ray
-n_cpu = 15
-n_workers = 15
 
 ray.init(num_cpus=n_cpu)
 workers = [RayRolloutWorker.remote(envname=env, hidden=hid, l=l, worker_id=i,
@@ -79,7 +55,7 @@ q_optimizer = Adam(q_params, lr=lr)
 def update(data, ac, ac_targ):
     # First run one gradient descent step for Q1 and Q2
     q_optimizer.zero_grad()
-    loss_q, q_info = compute_loss_q(data, ac, ac_targ, gamma, alpha)
+    loss_q, q_info = compute_loss_q(data, ac, ac_targ)
     loss_q.backward()
     q_optimizer.step()
 
@@ -90,7 +66,7 @@ def update(data, ac, ac_targ):
 
     # Next run one gradient descent step for pi.
     pi_optimizer.zero_grad()
-    loss_pi, pi_info = compute_loss_pi(data, ac, alpha)
+    loss_pi, pi_info = compute_loss_pi(data, ac)
     loss_pi.backward()
     pi_optimizer.step()
 
